@@ -69,25 +69,29 @@ function generateGrid() {
 
     gridData = [];
 
-    let maxX = 0, maxY = 0;
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+
     positions.forEach(pos => {
+        minX = Math.min(minX, pos.x);
         maxX = Math.max(maxX, pos.x);
+        minY = Math.min(minY, pos.y);
         maxY = Math.max(maxY, pos.y);
     });
 
+    minX = Math.min(minX, lubuX);
     maxX = Math.max(maxX, lubuX + 1);
+    minY = Math.min(minY, lubuY);
     maxY = Math.max(maxY, lubuY + 1);
 
-    const maxPlayers = 100;
-    const maxGridSize = 20;
-    if (maxX > maxGridSize) maxX = maxGridSize;
-    if (maxY > maxGridSize) maxY = maxGridSize;
+    const cols = maxX - minX + 1;
+    const rows = maxY - minY + 1;
 
-    grid.style.setProperty('--cols', maxX + 1);
-    grid.style.setProperty('--rows', maxY + 1);
+    grid.style.setProperty('--cols', cols);
+    grid.style.setProperty('--rows', rows);
 
-    for (let y = 0; y <= maxY; y++) {
-        for (let x = 0; x <= maxX; x++) {
+    for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
             cell.dataset.x = x;
