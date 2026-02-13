@@ -48,7 +48,9 @@ function processPlayerData(jsonData) {
                     const player = {
                         name: String(row['角色']).trim(),
                         stats: parseFloat(row['四维和'] || 0),
-                        power: parseFloat(row['战力'] || 0)
+                        power: parseFloat(row['战力'] || 0),
+                        defense: parseFloat(row['坦度'] || 0),
+                        attack: parseFloat(row['输出'] || 0)
                     };
 
                     if (!isNaN(player.stats)) {
@@ -61,7 +63,9 @@ function processPlayerData(jsonData) {
                 const player = {
                     name: String(row['角色']).trim(),
                     stats: parseFloat(row['四维和'] || 0),
-                    power: parseFloat(row['战力'] || 0)
+                    power: parseFloat(row['战力'] || 0),
+                    defense: parseFloat(row['坦度'] || 0),
+                    attack: parseFloat(row['输出'] || 0)
                 };
 
                 if (!isNaN(player.stats)) {
@@ -80,6 +84,15 @@ function generateGrid() {
     const lubuX = parseInt(document.getElementById('lubuX').value);
     const lubuY = parseInt(document.getElementById('lubuY').value);
     const ringCount = parseInt(document.getElementById('ringCount').value);
+
+    const gridContainer = document.getElementById('grid-container');
+    const heights = {
+        1: 600,
+        2: 800,
+        3: 1000,
+        4: 1200
+    };
+    gridContainer.style.minHeight = `${heights[ringCount]}px`;
 
     const positions = calculatePositions(lubuX, lubuY, ringCount);
 
@@ -119,7 +132,9 @@ function generateGrid() {
             if (x >= lubuX && x <= lubuX + 1 && y >= lubuY && y <= lubuY + 1) {
                 cell.className += ' lubu';
                 if (x === lubuX && y === lubuY) {
-                    cell.innerHTML = '吕布<br>校场';
+                    cell.innerHTML = `吕布<br>校场<br><small>(${x},${y})</small>`;
+                } else {
+                    cell.innerHTML = `<small>(${x},${y})</small>`;
                 }
             } else {
                 const playerPos = positions.find(pos => pos.x === x && pos.y === y);
@@ -137,13 +152,16 @@ function generateGrid() {
                             rank: playerPos.index + 1,
                             name: player.name,
                             stats: player.stats,
-                            power: player.power,
+                            defense: player.defense,
+                            attack: player.attack,
                             x: x,
                             y: y,
                             ring: playerPos.ring,
                             positionType: playerPos.positionType
                         });
                     }
+                } else {
+                    cell.innerHTML = `<small>(${x},${y})</small>`;
                 }
             }
 
@@ -162,23 +180,19 @@ function calculatePositions(lubuX, lubuY, ringCount) {
     const baseY = lubuY;
 
     for (let ring = 1; ring <= ringCount; ring++) {
-        const minX = baseX - ring;
-        const maxX = baseX + ring + 1;
-        const minY = baseY - ring;
-        const maxY = baseY + ring + 1;
+        const outerX = baseX + 2 + ring - 1;
+        const outerY = baseY + 2 + ring - 1;
 
-        for (let x = minX; x <= maxX; x++) {
-            for (let y = minY; y <= maxY; y++) {
-                if (isOnRing(x, y, baseX, baseY, ring)) {
-                    if (!isLubuField(x, y, baseX, baseY)) {
-                        positions.push({
-                            x: x,
-                            y: y,
-                            ring: ring,
-                            positionType: getPositionType(x, y, baseX, baseY, ring),
-                            index: positions.length
-                        });
-                    }
+        for (let x = baseX - ring; x <= baseX + 1 + ring; x++) {
+            for (let y = baseY - ring; y <= baseY + 1 + ring; y++) {
+                if (!isLubuField(x, y, baseX, baseY) && isOnRing(x, y, baseX, baseY, ring)) {
+                    positions.push({
+                        x: x,
+                        y: y,
+                        ring: ring,
+                        positionType: getPositionType(x, y, baseX, baseY, ring),
+                        index: positions.length
+                    });
                 }
             }
         }
@@ -192,14 +206,25 @@ function isLubuField(x, y, baseX, baseY) {
 }
 
 function isOnRing(x, y, baseX, baseY, ring) {
-    const distX = Math.max(Math.abs(x - baseX), Math.abs(x - (baseX + 1)));
-    const distY = Math.max(Math.abs(y - baseY), Math.abs(y - (baseY + 1)));
-    return Math.max(distX, distY) === ring;
+    const distLeft = x - baseX;
+    const distRight = (baseX + 1) - x;
+    const distTop = y - baseY;
+    const distBottom = (baseY + 1) - y;
+
+    const minDist = Math.min(Math.abs(distLeft), Math.abs(distRight),
+                           Math.abs(distTop), Math.abs(distBottom));
+
+    return minDist === ring;
 }
 
 function getPositionType(x, y, baseX, baseY, ring) {
-    const distX = Math.max(Math.abs(x - baseX), Math.abs(x - (baseX + 1)));
-    const distY = Math.max(Math.abs(y - baseY), Math.abs(y - (baseY + 1)));
+    const distLeft = Math.abs(x - baseX);
+    const distRight = Math.abs(x - (baseX + 1));
+    const distTop = Math.abs(y - baseY);
+    const distBottom = Math.abs(y - (baseY + 1));
+
+    const distX = Math.min(distLeft, distRight);
+    const distY = Math.min(distTop, distBottom);
 
     if (distX === ring && distY === ring) {
         return '角';
@@ -218,7 +243,8 @@ function updateResultsTable() {
             <td>${row.rank}</td>
             <td>${row.name}</td>
             <td>${row.stats.toFixed(0)}</td>
-            <td>${row.power.toFixed(0)}</td>
+            <td>${row.defense.toFixed(0)}</td>
+            <td>${row.attack.toFixed(0)}</td>
             <td>${row.x}</td>
             <td>${row.y}</td>
             <td>${row.ring}</td>
@@ -251,7 +277,8 @@ function downloadResults() {
         '排名': row.rank,
         '玩家': row.name,
         '四维和': row.stats,
-        '战力': row.power,
+        '坦度': row.defense,
+        '输出': row.attack,
         'X坐标': row.x,
         'Y坐标': row.y,
         '环数': row.ring,
@@ -321,4 +348,5 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
 
 document.addEventListener('DOMContentLoaded', function() {
     updateStats();
+    generateGrid();
 });
