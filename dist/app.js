@@ -122,22 +122,24 @@ function generateGrid() {
     grid.style.setProperty('--cols', cols);
     grid.style.setProperty('--rows', rows);
 
-    for (let y = minY; y <= maxY; y++) {
+    for (let y = maxY; y >= minY; y--) {
         for (let x = minX; x <= maxX; x++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
             cell.dataset.x = x;
-            cell.dataset.y = y;
+            cell.dataset.y = (maxY + minY) - y;
 
-            if (x >= lubuX && x <= lubuX + 1 && y >= lubuY && y <= lubuY + 1) {
+            if (x >= lubuX && x <= lubuX + 1 && ((maxY + minY) - y) >= lubuY && ((maxY + minY) - y) <= lubuY + 1) {
                 cell.className += ' lubu';
-                if (x === lubuX && y === lubuY) {
-                    cell.innerHTML = `吕布<br>校场<br><small>(${x},${y})</small>`;
+                const actualY = (maxY + minY) - y;
+                if (x === lubuX && actualY === lubuY) {
+                    cell.innerHTML = `吕布<br>校场<br><small>(${x},${actualY})</small>`;
                 } else {
-                    cell.innerHTML = `<small>(${x},${y})</small>`;
+                    cell.innerHTML = `<small>(${x},${actualY})</small>`;
                 }
             } else {
-                const playerPos = positions.find(pos => pos.x === x && pos.y === y);
+                const actualY = (maxY + minY) - y;
+                const playerPos = positions.find(pos => pos.x === x && pos.y === actualY);
                 if (playerPos) {
                     const player = playerData[playerPos.index];
                     if (player) {
@@ -145,7 +147,7 @@ function generateGrid() {
                         cell.innerHTML = `
                             <div class="rank">${playerPos.index + 1}</div>
                             <div class="name">${player.name}</div>
-                            <div class="coords">${x},${y}</div>
+                            <div class="coords">${x},${actualY}</div>
                         `;
 
                         gridData.push({
@@ -155,13 +157,13 @@ function generateGrid() {
                             defense: player.defense,
                             attack: player.attack,
                             x: x,
-                            y: y,
+                            y: actualY,
                             ring: playerPos.ring,
                             positionType: playerPos.positionType
                         });
                     }
                 } else {
-                    cell.innerHTML = `<small>(${x},${y})</small>`;
+                    cell.innerHTML = `<small>(${x},${actualY})</small>`;
                 }
             }
 
