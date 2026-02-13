@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吕布校场排位工具 - 三国·冰河时代</title>
+    <style>
+        :root {
+            --primary-color: #d4af37;
+            --secondary-color: #3a3a3a;
+            --accent-color: #c11b17;
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --grid-bg: #2a2a2a;
+            --cell-size: 80px;
+            --border-radius: 4px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            justify-content: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 150px;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+
+        input[type="number"], input[type="file"], select {
+            padding: 8px 12px;
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            border-color: var(--accent-color);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        #grid-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #grid {
+            display: grid;
+            gap: 1px;
+            background: #3a3a3a;
+            padding: 5px;
+            border-radius: var(--border-radius);
+            --cols: 10;
+            --rows: 10;
+            grid-template-columns: repeat(var(--cols), var(--cell-size));
+            grid-template-rows: repeat(var(--rows), var(--cell-size));
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background: #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 4px;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-color);
+        }
+
+        .cell:hover {
+            background: #3a3a3a;
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .lubu {
+            background: linear-gradient(135deg, #c11b17, #8b0000);
+            font-weight: bold;
+            color: white;
+            font-size: 0.9rem;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .player {
+            background: linear-gradient(135deg, var(--primary-color), #8b6914);
+            font-weight: bold;
+            color: white;
+        }
+
+        .player.ring-1 { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #000; }
+        .player.ring-2 { background: linear-gradient(135deg, #c0c0c0, #e0e0e0); color: #000; }
+        .player.ring-3 { background: linear-gradient(135deg, #cd7f32, #e9a767); }
+
+        .rank {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.7rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .name {
+            font-size: 0.75rem;
+            margin: 2px 0;
+        }
+
+        .coords {
+            font-size: 0.65rem;
+            opacity: 0.8;
+        }
+
+        #results {
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        tr:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        #message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        #message.success {
+            background: #28a745;
+            transform: translateX(0);
+        }
+
+        #message.error {
+            background: #dc3545;
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --cell-size: 60px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .grid-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>吕布校场排位工具</h1>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="excelFile">上传 Excel 文件</label>
+                <input type="file" id="excelFile" accept=".xlsx, .xls">
+            </div>
+
+            <div class="control-group">
+                <label for="lubuX">吕布校场 X 坐标</label>
+                <input type="number" id="lubuX" value="5" min="0" max="20">
+            </div>
+
+            <div class="control-group">
+                <label for="lubuY">吕布校场 Y 坐标</label>
+                <input type="number" id="lubuY" value="5" min="0" max="20">
+            </div>
+
+            <div class="control-group">
+                <label for="ringCount">排列环数</label>
+                <input type="number" id="ringCount" value="2" min="1" max="5">
+            </div>
+
+            <div style="display: flex; flex-direction: column; justify-content: flex-end; gap: 10px;">
+                <button class="btn" onclick="processData()">生成排位</button>
+                <button class="btn" onclick="downloadResults()">导出结果</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalPlayers">0</div>
+                <div class="stat-label">总玩家数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalPositions">0</div>
+                <div class="stat-label">总位置数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="filledPositions">0</div>
+                <div class="stat-label">已分配位置</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="emptyPositions">0</div>
+                <div class="stat-label">空位置</div>
+            </div>
+        </div>
+
+        <div id="grid-container">
+            <div id="grid"></div>
+        </div>
+
+        <div id="results">
+            <h2 style="text-align: center; color: var(--primary-color); margin-bottom: 15px;">排位结果</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>玩家姓名</th>
+                        <th>四维和</th>
+                        <th>战力</th>
+                        <th>X坐标</th>
+                        <th>Y坐标</th>
+                        <th>环数</th>
+                        <th>位置类型</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="message"></div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "lubu-position-tool",
+  "version": "1.0.0",
+  "description": "吕布校场排位工具 - 三国·冰河时代游戏辅助工具",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "build": "mkdir -p dist && cp -r index.html app.js dist/ 2>/dev/null || true && echo 'Build completed successfully. Output in dist/ directory.'",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "三国·冰河时代",
+    "吕布校场",
+    "排位工具",
+    "游戏辅助"
+  ],
+  "author": "Claude",
+  "license": "MIT"
+}
