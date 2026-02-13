@@ -38,16 +38,35 @@ function processData() {
 function processPlayerData(jsonData) {
     playerData = [];
 
-    jsonData.forEach(row => {
-        if (row['角色'] && row['角色'].toString().trim()) {
-            const player = {
-                name: String(row['角色']).trim(),
-                stats: parseFloat(row['四维和'] || 0),
-                power: parseFloat(row['战力'] || 0)
-            };
+    let validHeaderFound = false;
 
-            if (!isNaN(player.stats)) {
-                playerData.push(player);
+    jsonData.forEach(row => {
+        if (!validHeaderFound) {
+            if (row['角色'] || row['四维和'] || row['战力']) {
+                validHeaderFound = true;
+                if (typeof row['角色'] === 'string' && !row['角色'].includes('角色') && !row['角色'].includes('填写说明')) {
+                    const player = {
+                        name: String(row['角色']).trim(),
+                        stats: parseFloat(row['四维和'] || 0),
+                        power: parseFloat(row['战力'] || 0)
+                    };
+
+                    if (!isNaN(player.stats)) {
+                        playerData.push(player);
+                    }
+                }
+            }
+        } else {
+            if (row['角色'] && row['角色'].toString().trim()) {
+                const player = {
+                    name: String(row['角色']).trim(),
+                    stats: parseFloat(row['四维和'] || 0),
+                    power: parseFloat(row['战力'] || 0)
+                };
+
+                if (!isNaN(player.stats)) {
+                    playerData.push(player);
+                }
             }
         }
     });
@@ -99,7 +118,7 @@ function generateGrid() {
 
             if (x >= lubuX && x <= lubuX + 1 && y >= lubuY && y <= lubuY + 1) {
                 cell.className += ' lubu';
-                if (x === lubuX + 1 && y === lubuY + 1) {
+                if (x === lubuX && y === lubuY) {
                     cell.innerHTML = '吕布<br>校场';
                 }
             } else {
@@ -139,111 +158,54 @@ function generateGrid() {
 function calculatePositions(lubuX, lubuY, ringCount) {
     const positions = [];
 
+    const baseX = lubuX;
+    const baseY = lubuY;
+
     for (let ring = 1; ring <= ringCount; ring++) {
-        const edgePositions = getEdgePositions(lubuX, lubuY, ring);
-        const cornerPositions = getCornerPositions(lubuX, lubuY, ring);
+        const minX = baseX - ring;
+        const maxX = baseX + ring + 1;
+        const minY = baseY - ring;
+        const maxY = baseY + ring + 1;
 
-        edgePositions.forEach(pos => {
-            pos.index = positions.length;
-            positions.push(pos);
-        });
-        cornerPositions.forEach(pos => {
-            pos.index = positions.length;
-            positions.push(pos);
-        });
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+                if (isOnRing(x, y, baseX, baseY, ring)) {
+                    if (!isLubuField(x, y, baseX, baseY)) {
+                        positions.push({
+                            x: x,
+                            y: y,
+                            ring: ring,
+                            positionType: getPositionType(x, y, baseX, baseY, ring),
+                            index: positions.length
+                        });
+                    }
+                }
+            }
+        }
     }
 
     return positions;
 }
 
-function getEdgePositions(lubuX, lubuY, ring) {
-    const positions = [];
-
-    const baseX = lubuX + 1;
-    const baseY = lubuY + 1;
-
-    for (let i = 1; i <= ring; i++) {
-        positions.push({
-            x: baseX + i,
-            y: baseY,
-            ring: ring,
-            positionType: '边'
-        });
-    }
-
-    for (let i = 1; i <= ring; i++) {
-        positions.push({
-            x: baseX - i,
-            y: baseY,
-            ring: ring,
-            positionType: '边'
-        });
-    }
-
-    for (let i = 1; i <= ring; i++) {
-        positions.push({
-            x: baseX,
-            y: baseY + i,
-            ring: ring,
-            positionType: '边'
-        });
-    }
-
-    for (let i = 1; i <= ring; i++) {
-        positions.push({
-            x: baseX,
-            y: baseY - i,
-            ring: ring,
-            positionType: '边'
-        });
-    }
-
-    return positions;
+function isLubuField(x, y, baseX, baseY) {
+    return x >= baseX && x <= baseX + 1 && y >= baseY && y <= baseY + 1;
 }
 
-function getCornerPositions(lubuX, lubuY, ring) {
-    const positions = [];
+function isOnRing(x, y, baseX, baseY, ring) {
+    const distX = Math.max(Math.abs(x - baseX), Math.abs(x - (baseX + 1)));
+    const distY = Math.max(Math.abs(y - baseY), Math.abs(y - (baseY + 1)));
+    return Math.max(distX, distY) === ring;
+}
 
-    const baseX = lubuX + 1;
-    const baseY = lubuY + 1;
+function getPositionType(x, y, baseX, baseY, ring) {
+    const distX = Math.max(Math.abs(x - baseX), Math.abs(x - (baseX + 1)));
+    const distY = Math.max(Math.abs(y - baseY), Math.abs(y - (baseY + 1)));
 
-    for (let i = 1; i <= ring; i++) {
-        positions.push({
-            x: baseX + i,
-            y: baseY + (ring - i + 1),
-            ring: ring,
-            positionType: '角'
-        });
+    if (distX === ring && distY === ring) {
+        return '角';
+    } else {
+        return '边';
     }
-
-    for (let i = 1; i <= ring; i++) {
-        positions.push({
-            x: baseX - i,
-            y: baseY + (ring - i + 1),
-            ring: ring,
-            positionType: '角'
-        });
-    }
-
-    for (let i = 1; i <= ring; i++) {
-        positions.push({
-            x: baseX + i,
-            y: baseY - (ring - i + 1),
-            ring: ring,
-            positionType: '角'
-        });
-    }
-
-    for (let i = 1; i <= ring; i++) {
-        positions.push({
-            x: baseX - i,
-            y: baseY - (ring - i + 1),
-            ring: ring,
-            positionType: '角'
-        });
-    }
-
-    return positions;
 }
 
 function updateResultsTable() {
