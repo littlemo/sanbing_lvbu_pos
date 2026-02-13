@@ -75,8 +75,13 @@ function generateGrid() {
         maxY = Math.max(maxY, pos.y);
     });
 
-    maxX = Math.max(maxX, lubuX + ringCount + 1);
-    maxY = Math.max(maxY, lubuY + ringCount + 1);
+    maxX = Math.max(maxX, lubuX + 1);
+    maxY = Math.max(maxY, lubuY + 1);
+
+    const maxPlayers = 100;
+    const maxGridSize = 20;
+    if (maxX > maxGridSize) maxX = maxGridSize;
+    if (maxY > maxGridSize) maxY = maxGridSize;
 
     grid.style.setProperty('--cols', maxX + 1);
     grid.style.setProperty('--rows', maxY + 1);

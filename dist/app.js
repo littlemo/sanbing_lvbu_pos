@@ -75,8 +75,13 @@ function generateGrid() {
         maxY = Math.max(maxY, pos.y);
     });
 
-    maxX = Math.max(maxX, lubuX + ringCount + 1);
-    maxY = Math.max(maxY, lubuY + ringCount + 1);
+    maxX = Math.max(maxX, lubuX + 1);
+    maxY = Math.max(maxY, lubuY + 1);
+
+    const maxPlayers = 100;
+    const maxGridSize = 20;
+    if (maxX > maxGridSize) maxX = maxGridSize;
+    if (maxY > maxGridSize) maxY = maxGridSize;
 
     grid.style.setProperty('--cols', maxX + 1);
     grid.style.setProperty('--rows', maxY + 1);
@@ -134,8 +139,14 @@ function calculatePositions(lubuX, lubuY, ringCount) {
         const edgePositions = getEdgePositions(lubuX, lubuY, ring);
         const cornerPositions = getCornerPositions(lubuX, lubuY, ring);
 
-        edgePositions.forEach(pos => positions.push(pos));
-        cornerPositions.forEach(pos => positions.push(pos));
+        edgePositions.forEach(pos => {
+            pos.index = positions.length;
+            positions.push(pos);
+        });
+        cornerPositions.forEach(pos => {
+            pos.index = positions.length;
+            positions.push(pos);
+        });
     }
 
     return positions;
@@ -152,8 +163,7 @@ function getEdgePositions(lubuX, lubuY, ring) {
             x: baseX + i,
             y: baseY,
             ring: ring,
-            positionType: '边',
-            index: positions.length
+            positionType: '边'
         });
     }
 
@@ -162,8 +172,7 @@ function getEdgePositions(lubuX, lubuY, ring) {
             x: baseX - i,
             y: baseY,
             ring: ring,
-            positionType: '边',
-            index: positions.length
+            positionType: '边'
         });
     }
 
@@ -172,8 +181,7 @@ function getEdgePositions(lubuX, lubuY, ring) {
             x: baseX,
             y: baseY + i,
             ring: ring,
-            positionType: '边',
-            index: positions.length
+            positionType: '边'
         });
     }
 
@@ -182,8 +190,7 @@ function getEdgePositions(lubuX, lubuY, ring) {
             x: baseX,
             y: baseY - i,
             ring: ring,
-            positionType: '边',
-            index: positions.length
+            positionType: '边'
         });
     }
 
@@ -201,8 +208,7 @@ function getCornerPositions(lubuX, lubuY, ring) {
             x: baseX + i,
             y: baseY + (ring - i + 1),
             ring: ring,
-            positionType: '角',
-            index: positions.length
+            positionType: '角'
         });
     }
 
@@ -211,8 +217,7 @@ function getCornerPositions(lubuX, lubuY, ring) {
             x: baseX - i,
             y: baseY + (ring - i + 1),
             ring: ring,
-            positionType: '角',
-            index: positions.length
+            positionType: '角'
         });
     }
 
@@ -221,8 +226,7 @@ function getCornerPositions(lubuX, lubuY, ring) {
             x: baseX + i,
             y: baseY - (ring - i + 1),
             ring: ring,
-            positionType: '角',
-            index: positions.length
+            positionType: '角'
         });
     }
 
@@ -231,8 +235,7 @@ function getCornerPositions(lubuX, lubuY, ring) {
             x: baseX - i,
             y: baseY - (ring - i + 1),
             ring: ring,
-            positionType: '角',
-            index: positions.length
+            positionType: '角'
         });
     }
 
