@@ -180,11 +180,13 @@ function calculatePositions(lubuX, lubuY, ringCount) {
     const baseY = lubuY;
 
     for (let ring = 1; ring <= ringCount; ring++) {
-        const outerX = baseX + 2 + ring - 1;
-        const outerY = baseY + 2 + ring - 1;
+        const minX = baseX - ring;
+        const maxX = baseX + 1 + ring;
+        const minY = baseY - ring;
+        const maxY = baseY + 1 + ring;
 
-        for (let x = baseX - ring; x <= baseX + 1 + ring; x++) {
-            for (let y = baseY + ring; y >= baseY - ring; y--) {
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
                 if (!isLubuField(x, y, baseX, baseY) && isOnRing(x, y, baseX, baseY, ring)) {
                     positions.push({
                         x: x,
