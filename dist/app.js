@@ -197,7 +197,7 @@ Y坐标: ${y}
 
                         cellContent.innerHTML = `
                             <div class="name">${player.name}</div>
-                            <div class="coords">${x},${y}</div>
+                            <div class="coords">(${x},${y})</div>
                         `;
 
                         gridData.push({
