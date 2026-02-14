@@ -404,7 +404,10 @@ function downloadResults() {
         return;
     }
 
-    const data = gridData.map(row => ({
+    // 以排名升序排列数据
+    const sortedGridData = [...gridData].sort((a, b) => a.rank - b.rank);
+
+    const data = sortedGridData.map(row => ({
         '排名': row.rank,
         '玩家': row.name,
         '四维和': row.stats,
