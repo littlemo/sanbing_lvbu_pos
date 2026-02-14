@@ -167,7 +167,8 @@ function generateGrid() {
                             x: x,
                             y: y,
                             ring: playerPos.ring,
-                            positionType: playerPos.positionType
+                            positionType: playerPos.positionType,
+                            distance: playerPos.distance.toFixed(2) // 保留两位小数
                         });
                     } else {
                         // 当找到位置但没有玩家数据时，显示坐标
@@ -280,7 +281,10 @@ function updateResultsTable() {
     const tbody = document.getElementById('resultsTableBody');
     tbody.innerHTML = '';
 
-    gridData.forEach(row => {
+    // 按照排名升序排序
+    const sortedData = [...gridData].sort((a, b) => a.rank - b.rank);
+
+    sortedData.forEach(row => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${row.rank}</td>
@@ -292,6 +296,7 @@ function updateResultsTable() {
             <td>${row.y}</td>
             <td>${row.ring}</td>
             <td>${row.positionType}</td>
+            <td>${row.distance}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -330,7 +335,8 @@ function downloadResults() {
         'X坐标': row.x,
         'Y坐标': row.y,
         '环数': row.ring,
-        '位置类型': row.positionType
+        '位置类型': row.positionType,
+        '距离': row.distance
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -414,6 +420,21 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     updateStats();
     generateGrid();
+
+    // 为可选参数添加事件监听器，当参数变化时自动触发排位更新
+    const lubuXInput = document.getElementById('lubuX');
+    const lubuYInput = document.getElementById('lubuY');
+    const ringCountInput = document.getElementById('ringCount');
+
+    // 监听输入框变化事件
+    lubuXInput.addEventListener('change', processData);
+    lubuYInput.addEventListener('change', processData);
+    ringCountInput.addEventListener('change', processData);
+
+    // 监听输入框输入事件（实时更新）
+    lubuXInput.addEventListener('input', processData);
+    lubuYInput.addEventListener('input', processData);
+    ringCountInput.addEventListener('input', processData);
 
     // 检查对角线上的单元格内容的脚本
     setTimeout(() => {
