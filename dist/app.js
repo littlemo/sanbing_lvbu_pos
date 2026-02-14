@@ -153,12 +153,17 @@ function generateGrid() {
             cell.dataset.x = x;
             cell.dataset.y = y;
 
+            // 创建内容容器，用于水平显示信息且不跟随旋转
+            const cellContent = document.createElement('div');
+            cellContent.className = 'cell-content';
+
             if (x >= lubuX && x <= lubuX + 1 && y >= lubuY && y <= lubuY + 1) {
                 cell.className += ' lubu';
+                cellContent.className += ' no-hover'; // 为吕布校场cell添加特殊类
                 if (x === lubuX && y === lubuY) {
-                    cell.innerHTML = `吕布<br>校场<br><small>(${x},${y})</small>`;
+                    cellContent.innerHTML = `吕布<br>校场<br><small>(${x},${y})</small>`;
                 } else {
-                    cell.innerHTML = `<small>(${x},${y})</small>`;
+                    cellContent.innerHTML = `<small>(${x},${y})</small>`;
                 }
             } else {
                 const playerPos = positions.find(pos => pos.x === x && pos.y === y);
@@ -171,8 +176,8 @@ function generateGrid() {
                     const player = activePlayers[playerPos.index];
                     if (player) {
                         cell.className += ` player ring-${playerPos.ring}`;
-                        // 添加完整信息的data属性
-                        cell.dataset.playerInfo = `
+                        // 添加完整信息的data属性到内容容器上
+                        cellContent.dataset.playerInfo = `
 姓名: ${player.name}
 排名: ${playerPos.index + 1}
 四维和: ${player.stats.toFixed(0)}
@@ -184,8 +189,13 @@ Y坐标: ${y}
 位置类型: ${playerPos.positionType}
 距离: ${playerPos.distance.toFixed(2)}
 `.trim();
-                        cell.innerHTML = `
-                            <div class="rank">${playerPos.index + 1}</div>
+                        // 在父 cell 上添加排名角标
+                        const rankDiv = document.createElement('div');
+                        rankDiv.className = 'rank';
+                        rankDiv.textContent = playerPos.index + 1;
+                        cell.appendChild(rankDiv);
+
+                        cellContent.innerHTML = `
                             <div class="name">${player.name}</div>
                             <div class="coords">${x},${y}</div>
                         `;
@@ -205,15 +215,16 @@ Y坐标: ${y}
                     } else {
                         // 当找到位置但没有玩家数据时，显示坐标
                         cell.className += ' empty';
-                        cell.innerHTML = `<small>(${x},${y})</small>`;
+                        cellContent.innerHTML = `<small>(${x},${y})</small>`;
                     }
                 } else {
                     // 当找不到位置时，显示坐标
                     cell.className += ' empty';
-                    cell.innerHTML = `<small>(${x},${y})</small>`;
+                    cellContent.innerHTML = `<small>(${x},${y})</small>`;
                 }
             }
 
+            cell.appendChild(cellContent);
             grid.appendChild(cell);
         }
     }
@@ -288,7 +299,8 @@ function calculatePositions(lubuX, lubuY, ringCount) {
         const distanceRange = ringRange.max - ringRange.min;
         let distanceLevel = 0;
         if (distanceRange > 0) {
-            distanceLevel = Math.floor(((pos.distance - ringRange.min) / distanceRange) * 7); // 分为8个级别
+            // 优化距离级别计算，使用更精细的级别划分（10个级别）
+            distanceLevel = Math.floor(((pos.distance - ringRange.min) / distanceRange) * 9); // 分为10个级别
         }
         pos.distanceLevel = distanceLevel;
 

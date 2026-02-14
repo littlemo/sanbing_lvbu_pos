@@ -154,6 +154,30 @@
             color: var(--text-color);
         }
 
+        .cell-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* 调整内容从顶部开始，让玩家名称居中 */
+            align-items: center;
+            transform: rotate(45deg); /* 反向旋转以抵消网格的-45度旋转，使内容水平显示 */
+            transition: all 0.3s ease;
+            position: relative;
+            padding-top: 20px; /* 向下移动内容，让玩家名称居中 */
+        }
+
+        /* 吕布校场cell的内容样式 - 保持居中位置，不支持hover */
+        .cell-content.no-hover {
+            justify-content: center; /* 保持居中位置 */
+            padding-top: 0; /* 取消向下移动 */
+        }
+
+        /* 吕布校场cell不显示hover效果 */
+        .cell-content.no-hover::after {
+            display: none;
+        }
+
         .cell:hover {
             background: #3a3a3a;
             transform: scale(1.05);
@@ -176,33 +200,39 @@
 
         /* 环1内不同距离值的颜色深浅 */
         .player.ring-1.ring-1-distance-0 { background: linear-gradient(135deg, #f1f8e9, #dcedc8); color: #000; }
-        .player.ring-1.ring-1-distance-1 { background: linear-gradient(135deg, #dcedc8, #c5e1a5); color: #000; }
-        .player.ring-1.ring-1-distance-2 { background: linear-gradient(135deg, #c5e1a5, #aed581); color: #000; }
-        .player.ring-1.ring-1-distance-3 { background: linear-gradient(135deg, #aed581, #9ccc65); color: #000; }
-        .player.ring-1.ring-1-distance-4 { background: linear-gradient(135deg, #9ccc65, #8bc34a); color: #ffffff; }
-        .player.ring-1.ring-1-distance-5 { background: linear-gradient(135deg, #8bc34a, #7cb342); color: #ffffff; }
-        .player.ring-1.ring-1-distance-6 { background: linear-gradient(135deg, #7cb342, #689f38); color: #ffffff; }
-        .player.ring-1.ring-1-distance-7 { background: linear-gradient(135deg, #689f38, #558b2f); color: #ffffff; }
+        .player.ring-1.ring-1-distance-1 { background: linear-gradient(135deg, #e8f5e8, #c8e6c9); color: #000; }
+        .player.ring-1.ring-1-distance-2 { background: linear-gradient(135deg, #dcedc8, #c5e1a5); color: #000; }
+        .player.ring-1.ring-1-distance-3 { background: linear-gradient(135deg, #c5e1a5, #aed581); color: #000; }
+        .player.ring-1.ring-1-distance-4 { background: linear-gradient(135deg, #aed581, #9ccc65); color: #000; }
+        .player.ring-1.ring-1-distance-5 { background: linear-gradient(135deg, #9ccc65, #8bc34a); color: #ffffff; }
+        .player.ring-1.ring-1-distance-6 { background: linear-gradient(135deg, #8bc34a, #7cb342); color: #ffffff; }
+        .player.ring-1.ring-1-distance-7 { background: linear-gradient(135deg, #7cb342, #689f38); color: #ffffff; }
+        .player.ring-1.ring-1-distance-8 { background: linear-gradient(135deg, #689f38, #558b2f); color: #ffffff; }
+        .player.ring-1.ring-1-distance-9 { background: linear-gradient(135deg, #558b2f, #33691e); color: #ffffff; }
 
         /* 环2内不同距离值的颜色深浅 */
         .player.ring-2.ring-2-distance-0 { background: linear-gradient(135deg, #e3f2fd, #bbdefb); color: #000; }
-        .player.ring-2.ring-2-distance-1 { background: linear-gradient(135deg, #bbdefb, #90caf9); color: #000; }
-        .player.ring-2.ring-2-distance-2 { background: linear-gradient(135deg, #90caf9, #64b5f6); color: #ffffff; }
-        .player.ring-2.ring-2-distance-3 { background: linear-gradient(135deg, #64b5f6, #42a5f5); color: #ffffff; }
-        .player.ring-2.ring-2-distance-4 { background: linear-gradient(135deg, #42a5f5, #1e88e5); color: #ffffff; }
-        .player.ring-2.ring-2-distance-5 { background: linear-gradient(135deg, #1e88e5, #1976d2); color: #ffffff; }
-        .player.ring-2.ring-2-distance-6 { background: linear-gradient(135deg, #1976d2, #1565c0); color: #ffffff; }
-        .player.ring-2.ring-2-distance-7 { background: linear-gradient(135deg, #1565c0, #0d47a1); color: #ffffff; }
+        .player.ring-2.ring-2-distance-1 { background: linear-gradient(135deg, #d1c4e9, #b39ddb); color: #000; }
+        .player.ring-2.ring-2-distance-2 { background: linear-gradient(135deg, #bbdefb, #90caf9); color: #000; }
+        .player.ring-2.ring-2-distance-3 { background: linear-gradient(135deg, #90caf9, #64b5f6); color: #ffffff; }
+        .player.ring-2.ring-2-distance-4 { background: linear-gradient(135deg, #64b5f6, #42a5f5); color: #ffffff; }
+        .player.ring-2.ring-2-distance-5 { background: linear-gradient(135deg, #42a5f5, #1e88e5); color: #ffffff; }
+        .player.ring-2.ring-2-distance-6 { background: linear-gradient(135deg, #1e88e5, #1976d2); color: #ffffff; }
+        .player.ring-2.ring-2-distance-7 { background: linear-gradient(135deg, #1976d2, #1565c0); color: #ffffff; }
+        .player.ring-2.ring-2-distance-8 { background: linear-gradient(135deg, #1565c0, #0d47a1); color: #ffffff; }
+        .player.ring-2.ring-2-distance-9 { background: linear-gradient(135deg, #0d47a1, #0d47a1); color: #ffffff; }
 
         /* 环3内不同距离值的颜色深浅 */
         .player.ring-3.ring-3-distance-0 { background: linear-gradient(135deg, #fff3e0, #ffe0b2); color: #000; }
-        .player.ring-3.ring-3-distance-1 { background: linear-gradient(135deg, #ffcc80, #ffb74d); color: #000; }
-        .player.ring-3.ring-3-distance-2 { background: linear-gradient(135deg, #ffb74d, #ffa726); color: #000; }
-        .player.ring-3.ring-3-distance-3 { background: linear-gradient(135deg, #ffa726, #ff9800); color: #ffffff; }
-        .player.ring-3.ring-3-distance-4 { background: linear-gradient(135deg, #ff9800, #fb8c00); color: #ffffff; }
-        .player.ring-3.ring-3-distance-5 { background: linear-gradient(135deg, #fb8c00, #f57c00); color: #ffffff; }
-        .player.ring-3.ring-3-distance-6 { background: linear-gradient(135deg, #f57c00, #ef6c00); color: #ffffff; }
-        .player.ring-3.ring-3-distance-7 { background: linear-gradient(135deg, #ef6c00, #e65100); color: #ffffff; }
+        .player.ring-3.ring-3-distance-1 { background: linear-gradient(135deg, #ffecb3, #ffe082); color: #000; }
+        .player.ring-3.ring-3-distance-2 { background: linear-gradient(135deg, #ffcc80, #ffb74d); color: #000; }
+        .player.ring-3.ring-3-distance-3 { background: linear-gradient(135deg, #ffb74d, #ffa726); color: #000; }
+        .player.ring-3.ring-3-distance-4 { background: linear-gradient(135deg, #ffa726, #ff9800); color: #ffffff; }
+        .player.ring-3.ring-3-distance-5 { background: linear-gradient(135deg, #ff9800, #fb8c00); color: #ffffff; }
+        .player.ring-3.ring-3-distance-6 { background: linear-gradient(135deg, #fb8c00, #f57c00); color: #ffffff; }
+        .player.ring-3.ring-3-distance-7 { background: linear-gradient(135deg, #f57c00, #ef6c00); color: #ffffff; }
+        .player.ring-3.ring-3-distance-8 { background: linear-gradient(135deg, #ef6c00, #e65100); color: #ffffff; }
+        .player.ring-3.ring-3-distance-9 { background: linear-gradient(135deg, #e65100, #d84315); color: #ffffff; }
 
         /* 环4内不同距离值的颜色深浅 */
         .player.ring-4.ring-4-distance-0 { background: linear-gradient(135deg, #f3e5f5, #e1bee7); color: #000; }
@@ -213,6 +243,8 @@
         .player.ring-4.ring-4-distance-5 { background: linear-gradient(135deg, #9c27b0, #8e24aa); color: #ffffff; }
         .player.ring-4.ring-4-distance-6 { background: linear-gradient(135deg, #8e24aa, #7b1fa2); color: #ffffff; }
         .player.ring-4.ring-4-distance-7 { background: linear-gradient(135deg, #7b1fa2, #6a1b9a); color: #ffffff; }
+        .player.ring-4.ring-4-distance-8 { background: linear-gradient(135deg, #6a1b9a, #4a148c); color: #ffffff; }
+        .player.ring-4.ring-4-distance-9 { background: linear-gradient(135deg, #4a148c, #311b92); color: #ffffff; }
 
         /* 距离值对应的颜色 */
         .distance-0 { background: linear-gradient(135deg, #00ff00, #00cc00); }
@@ -244,7 +276,7 @@
         }
 
         /* 玩家信息tooltip */
-        .cell.player::after {
+        .cell-content::after {
             content: attr(data-player-info);
             position: absolute;
             bottom: 100%;
@@ -260,9 +292,10 @@
             margin-bottom: 10px;
             opacity: 0;
             transition: all 0.3s ease;
+            z-index: 100;
         }
 
-        .cell.player:hover::after {
+        .cell-content:hover::after {
             transform: translateX(-50%) scale(1);
             opacity: 1;
         }

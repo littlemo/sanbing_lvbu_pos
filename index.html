@@ -154,6 +154,30 @@
             color: var(--text-color);
         }
 
+        .cell-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* 调整内容从顶部开始，让玩家名称居中 */
+            align-items: center;
+            transform: rotate(45deg); /* 反向旋转以抵消网格的-45度旋转，使内容水平显示 */
+            transition: all 0.3s ease;
+            position: relative;
+            padding-top: 20px; /* 向下移动内容，让玩家名称居中 */
+        }
+
+        /* 吕布校场cell的内容样式 - 保持居中位置，不支持hover */
+        .cell-content.no-hover {
+            justify-content: center; /* 保持居中位置 */
+            padding-top: 0; /* 取消向下移动 */
+        }
+
+        /* 吕布校场cell不显示hover效果 */
+        .cell-content.no-hover::after {
+            display: none;
+        }
+
         .cell:hover {
             background: #3a3a3a;
             transform: scale(1.05);
@@ -252,7 +276,7 @@
         }
 
         /* 玩家信息tooltip */
-        .cell.player::after {
+        .cell-content::after {
             content: attr(data-player-info);
             position: absolute;
             bottom: 100%;
@@ -268,9 +292,10 @@
             margin-bottom: 10px;
             opacity: 0;
             transition: all 0.3s ease;
+            z-index: 100;
         }
 
-        .cell.player:hover::after {
+        .cell-content:hover::after {
             transform: translateX(-50%) scale(1);
             opacity: 1;
         }
