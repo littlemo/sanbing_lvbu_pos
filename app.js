@@ -111,9 +111,10 @@ function generateGrid() {
         maxY = Math.max(maxY, pos.y);
     });
 
-    minX = Math.max(minX, lubuX, 0); // 确保最小X坐标不小于0
+    // 布局坐标可以为负，不需要限制最小值
+    minX = Math.min(minX, lubuX);
     maxX = Math.max(maxX, lubuX + 1);
-    minY = Math.max(minY, lubuY, 0); // 确保最小Y坐标不小于0
+    minY = Math.min(minY, lubuY);
     maxY = Math.max(maxY, lubuY + 1);
 
     const cols = maxX - minX + 1;
@@ -135,7 +136,8 @@ function generateGrid() {
     for (let y = maxY; y >= minY; y--) {
         if (DEBUG) console.log(`\n--- Y坐标: ${y} ---`);
         for (let x = minX; x <= maxX; x++) {
-            if (x < 0 || y < 0) { // 跳过坐标小于0的单元格
+            // 只有当显示坐标（游戏中的坐标）为负数时才不绘制单元格
+            if (x < 0 || y < 0) {
                 continue;
             }
 
@@ -194,24 +196,35 @@ function generateGrid() {
 
 function calculatePositions(lubuX, lubuY, ringCount) {
     const positions = [];
-
     const baseX = lubuX;
     const baseY = lubuY;
 
+    // 直接实现用户公式：环数n，总位置数=(2n+2)^2 - 4 (吕布校场)
+    // 为了确保坐标不小于0，我们需要调整起始坐标
     for (let ring = 1; ring <= ringCount; ring++) {
-        const minX = Math.max(0, baseX - ring); // 确保不小于0
-        const maxX = baseX + 1 + ring;
-        const minY = Math.max(0, baseY - ring); // 确保不小于0
-        const maxY = baseY + 1 + ring;
+        const width = 2 * ring + 2;
+        const height = 2 * ring + 2;
 
-        for (let x = minX; x <= maxX; x++) {
-            for (let y = minY; y <= maxY; y++) {
-                if (x >= 0 && y >= 0 && !isLubuField(x, y, baseX, baseY) && isOnRing(x, y, baseX, baseY, ring)) {
+        // 确保起始坐标不小于0
+        const startX = Math.max(0, lubuX - ring);
+        const startY = Math.max(0, lubuY - ring);
+
+        // 调整结束坐标，确保总宽度和高度
+        const endX = startX + width;
+        const endY = startY + height;
+
+        for (let x = startX; x < endX; x++) {
+            for (let y = startY; y < endY; y++) {
+                if (isLubuField(x, y, lubuX, lubuY)) continue;
+
+                // 检查位置是否已经存在
+                const exists = positions.some(pos => pos.x === x && pos.y === y);
+                if (!exists) {
                     positions.push({
-                        x: x,
-                        y: y,
-                        ring: ring,
-                        positionType: getPositionType(x, y, baseX, baseY, ring),
+                        x,
+                        y,
+                        ring,
+                        positionType: getPositionType(x, y, lubuX, lubuY, ring),
                         index: positions.length
                     });
                 }
@@ -281,22 +294,8 @@ function updateStats() {
     const lubuX = parseInt(document.getElementById('lubuX').value);
     const lubuY = parseInt(document.getElementById('lubuY').value);
 
-    // 重新计算总位置数量，只计算坐标值大于等于0的位置
-    let totalPositions = 0;
-    for (let ring = 1; ring <= ringCount; ring++) {
-        const minX = Math.max(0, lubuX - ring);
-        const maxX = lubuX + 1 + ring;
-        const minY = Math.max(0, lubuY - ring);
-        const maxY = lubuY + 1 + ring;
-
-        for (let x = minX; x <= maxX; x++) {
-            for (let y = minY; y <= maxY; y++) {
-                if (x >= 0 && y >= 0 && !isLubuField(x, y, lubuX, lubuY) && isOnRing(x, y, lubuX, lubuY, ring)) {
-                    totalPositions++;
-                }
-            }
-        }
-    }
+    // 直接使用用户公式计算总位置数：(2n+2)^2 -4
+    const totalPositions = calculatePositions(lubuX, lubuY, ringCount).length;
 
     const filledPositions = Math.min(totalPlayers, totalPositions);
     const emptyPositions = Math.max(0, totalPositions - totalPlayers);
