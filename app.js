@@ -38,39 +38,18 @@ function processData() {
 function processPlayerData(jsonData) {
     playerData = [];
 
-    let validHeaderFound = false;
-
     jsonData.forEach(row => {
-        if (!validHeaderFound) {
-            if (row['角色'] || row['四维和'] || row['战力']) {
-                validHeaderFound = true;
-                if (typeof row['角色'] === 'string' && !row['角色'].includes('角色') && !row['角色'].includes('填写说明')) {
-                    const player = {
-                        name: String(row['角色']).trim(),
-                        stats: parseFloat(row['四维和'] || 0),
-                        power: parseFloat(row['战力'] || 0),
-                        defense: parseFloat(row['坦度'] || 0),
-                        attack: parseFloat(row['输出'] || 0)
-                    };
+        // 检查是否有游戏ID字段
+        if (row['游戏ID'] && String(row['游戏ID']).trim()) {
+            const player = {
+                name: String(row['游戏ID']).trim(),
+                stats: parseFloat(row['四维和'] || 0),
+                defense: parseFloat(row['步维(坦度)'] || 0),
+                attack: parseFloat(row['弓维(输出)'] || 0)
+            };
 
-                    if (!isNaN(player.stats)) {
-                        playerData.push(player);
-                    }
-                }
-            }
-        } else {
-            if (row['角色'] && row['角色'].toString().trim()) {
-                const player = {
-                    name: String(row['角色']).trim(),
-                    stats: parseFloat(row['四维和'] || 0),
-                    power: parseFloat(row['战力'] || 0),
-                    defense: parseFloat(row['坦度'] || 0),
-                    attack: parseFloat(row['输出'] || 0)
-                };
-
-                if (!isNaN(player.stats)) {
-                    playerData.push(player);
-                }
+            if (!isNaN(player.stats)) {
+                playerData.push(player);
             }
         }
     });
@@ -355,7 +334,24 @@ function readExcelFile(file) {
                 const workbook = XLSX.read(data, { type: 'array' });
 
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                // 实际表头在第2行（索引为1），数据从第3行开始
+                // 使用 header: 1 来获取原始数组格式，然后重新格式化
+                const rawData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                // 跳过前2行（第1行是填写说明，第2行是表头）
+                const headerRow = rawData[1];
+                const dataRows = rawData.slice(2);
+
+                // 转换为对象格式
+                const jsonData = dataRows.map(row => {
+                    const obj = {};
+                    headerRow.forEach((header, index) => {
+                        if (index < row.length) {
+                            obj[header] = row[index];
+                        }
+                    });
+                    return obj;
+                });
 
                 resolve(jsonData);
             } catch (error) {
