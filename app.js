@@ -122,7 +122,18 @@ function generateGrid() {
     grid.style.setProperty('--cols', cols);
     grid.style.setProperty('--rows', rows);
 
+    // 调试信息：显示网格生成参数
+    const DEBUG = true;
+    if (DEBUG) {
+        console.log("=== 网格生成 ===");
+        console.log(`minY: ${minY}, maxY: ${maxY}`);
+        console.log(`minX: ${minX}, maxX: ${maxX}`);
+    }
+
+    // 由于网格使用 transform: rotate(-45deg) 旋转，需要反向遍历 Y 轴
+    // 以确保视觉上 Y 坐标值由下至上增大，符合常规坐标系习惯
     for (let y = maxY; y >= minY; y--) {
+        if (DEBUG) console.log(`\n--- Y坐标: ${y} ---`);
         for (let x = minX; x <= maxX; x++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
