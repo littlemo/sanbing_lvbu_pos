@@ -202,10 +202,12 @@ Y坐标: ${y}
                         });
                     } else {
                         // 当找到位置但没有玩家数据时，显示坐标
+                        cell.className += ' empty';
                         cell.innerHTML = `<small>(${x},${y})</small>`;
                     }
                 } else {
                     // 当找不到位置时，显示坐标
+                    cell.className += ' empty';
                     cell.innerHTML = `<small>(${x},${y})</small>`;
                 }
             }
