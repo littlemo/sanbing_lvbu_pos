@@ -38,39 +38,18 @@ function processData() {
 function processPlayerData(jsonData) {
     playerData = [];
 
-    let validHeaderFound = false;
-
     jsonData.forEach(row => {
-        if (!validHeaderFound) {
-            if (row['角色'] || row['四维和'] || row['战力']) {
-                validHeaderFound = true;
-                if (typeof row['角色'] === 'string' && !row['角色'].includes('角色') && !row['角色'].includes('填写说明')) {
-                    const player = {
-                        name: String(row['角色']).trim(),
-                        stats: parseFloat(row['四维和'] || 0),
-                        power: parseFloat(row['战力'] || 0),
-                        defense: parseFloat(row['坦度'] || 0),
-                        attack: parseFloat(row['输出'] || 0)
-                    };
+        // 检查是否有游戏ID字段
+        if (row['游戏ID'] && String(row['游戏ID']).trim()) {
+            const player = {
+                name: String(row['游戏ID']).trim(),
+                stats: parseFloat(row['四维和'] || 0),
+                defense: parseFloat(row['步维(坦度)'] || 0),
+                attack: parseFloat(row['弓维(输出)'] || 0)
+            };
 
-                    if (!isNaN(player.stats)) {
-                        playerData.push(player);
-                    }
-                }
-            }
-        } else {
-            if (row['角色'] && row['角色'].toString().trim()) {
-                const player = {
-                    name: String(row['角色']).trim(),
-                    stats: parseFloat(row['四维和'] || 0),
-                    power: parseFloat(row['战力'] || 0),
-                    defense: parseFloat(row['坦度'] || 0),
-                    attack: parseFloat(row['输出'] || 0)
-                };
-
-                if (!isNaN(player.stats)) {
-                    playerData.push(player);
-                }
+            if (!isNaN(player.stats)) {
+                playerData.push(player);
             }
         }
     });
@@ -111,6 +90,7 @@ function generateGrid() {
         maxY = Math.max(maxY, pos.y);
     });
 
+    // 布局坐标可以为负，不需要限制最小值
     minX = Math.min(minX, lubuX);
     maxX = Math.max(maxX, lubuX + 1);
     minY = Math.min(minY, lubuY);
@@ -122,24 +102,38 @@ function generateGrid() {
     grid.style.setProperty('--cols', cols);
     grid.style.setProperty('--rows', rows);
 
+    // 调试信息：显示网格生成参数
+    const DEBUG = true;
+    if (DEBUG) {
+        console.log("=== 网格生成 ===");
+        console.log(`minY: ${minY}, maxY: ${maxY}`);
+        console.log(`minX: ${minX}, maxX: ${maxX}`);
+    }
+
+    // 由于网格使用 transform: rotate(-45deg) 旋转，需要反向遍历 Y 轴
+    // 以确保视觉上 Y 坐标值由下至上增大，符合常规坐标系习惯
     for (let y = maxY; y >= minY; y--) {
+        if (DEBUG) console.log(`\n--- Y坐标: ${y} ---`);
         for (let x = minX; x <= maxX; x++) {
+            // 只有当显示坐标（游戏中的坐标）为负数时才不绘制单元格
+            if (x < 0 || y < 0) {
+                continue;
+            }
+
             const cell = document.createElement('div');
             cell.className = 'cell';
             cell.dataset.x = x;
-            cell.dataset.y = (maxY + minY) - y;
+            cell.dataset.y = y;
 
-            if (x >= lubuX && x <= lubuX + 1 && ((maxY + minY) - y) >= lubuY && ((maxY + minY) - y) <= lubuY + 1) {
+            if (x >= lubuX && x <= lubuX + 1 && y >= lubuY && y <= lubuY + 1) {
                 cell.className += ' lubu';
-                const actualY = (maxY + minY) - y;
-                if (x === lubuX && actualY === lubuY) {
-                    cell.innerHTML = `吕布<br>校场<br><small>(${x},${actualY})</small>`;
+                if (x === lubuX && y === lubuY) {
+                    cell.innerHTML = `吕布<br>校场<br><small>(${x},${y})</small>`;
                 } else {
-                    cell.innerHTML = `<small>(${x},${actualY})</small>`;
+                    cell.innerHTML = `<small>(${x},${y})</small>`;
                 }
             } else {
-                const actualY = (maxY + minY) - y;
-                const playerPos = positions.find(pos => pos.x === x && pos.y === actualY);
+                const playerPos = positions.find(pos => pos.x === x && pos.y === y);
                 if (playerPos) {
                     const player = playerData[playerPos.index];
                     if (player) {
@@ -147,7 +141,7 @@ function generateGrid() {
                         cell.innerHTML = `
                             <div class="rank">${playerPos.index + 1}</div>
                             <div class="name">${player.name}</div>
-                            <div class="coords">${x},${actualY}</div>
+                            <div class="coords">${x},${y}</div>
                         `;
 
                         gridData.push({
@@ -157,13 +151,17 @@ function generateGrid() {
                             defense: player.defense,
                             attack: player.attack,
                             x: x,
-                            y: actualY,
+                            y: y,
                             ring: playerPos.ring,
                             positionType: playerPos.positionType
                         });
+                    } else {
+                        // 当找到位置但没有玩家数据时，显示坐标
+                        cell.innerHTML = `<small>(${x},${y})</small>`;
                     }
                 } else {
-                    cell.innerHTML = `<small>(${x},${actualY})</small>`;
+                    // 当找不到位置时，显示坐标
+                    cell.innerHTML = `<small>(${x},${y})</small>`;
                 }
             }
 
@@ -177,24 +175,35 @@ function generateGrid() {
 
 function calculatePositions(lubuX, lubuY, ringCount) {
     const positions = [];
-
     const baseX = lubuX;
     const baseY = lubuY;
 
+    // 直接实现用户公式：环数n，总位置数=(2n+2)^2 - 4 (吕布校场)
+    // 为了确保坐标不小于0，我们需要调整起始坐标
     for (let ring = 1; ring <= ringCount; ring++) {
-        const minX = baseX - ring;
-        const maxX = baseX + 1 + ring;
-        const minY = baseY - ring;
-        const maxY = baseY + 1 + ring;
+        const width = 2 * ring + 2;
+        const height = 2 * ring + 2;
 
-        for (let x = minX; x <= maxX; x++) {
-            for (let y = minY; y <= maxY; y++) {
-                if (!isLubuField(x, y, baseX, baseY) && isOnRing(x, y, baseX, baseY, ring)) {
+        // 确保起始坐标不小于0
+        const startX = Math.max(0, lubuX - ring);
+        const startY = Math.max(0, lubuY - ring);
+
+        // 调整结束坐标，确保总宽度和高度
+        const endX = startX + width;
+        const endY = startY + height;
+
+        for (let x = startX; x < endX; x++) {
+            for (let y = startY; y < endY; y++) {
+                if (isLubuField(x, y, lubuX, lubuY)) continue;
+
+                // 检查位置是否已经存在
+                const exists = positions.some(pos => pos.x === x && pos.y === y);
+                if (!exists) {
                     positions.push({
-                        x: x,
-                        y: y,
-                        ring: ring,
-                        positionType: getPositionType(x, y, baseX, baseY, ring),
+                        x,
+                        y,
+                        ring,
+                        positionType: getPositionType(x, y, lubuX, lubuY, ring),
                         index: positions.length
                     });
                 }
@@ -261,7 +270,12 @@ function updateResultsTable() {
 function updateStats() {
     const totalPlayers = playerData.length;
     const ringCount = parseInt(document.getElementById('ringCount').value);
-    const totalPositions = ringCount * (ringCount + 1) * 5;
+    const lubuX = parseInt(document.getElementById('lubuX').value);
+    const lubuY = parseInt(document.getElementById('lubuY').value);
+
+    // 直接使用用户公式计算总位置数：(2n+2)^2 -4
+    const totalPositions = calculatePositions(lubuX, lubuY, ringCount).length;
+
     const filledPositions = Math.min(totalPlayers, totalPositions);
     const emptyPositions = Math.max(0, totalPositions - totalPlayers);
 
@@ -320,7 +334,24 @@ function readExcelFile(file) {
                 const workbook = XLSX.read(data, { type: 'array' });
 
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                // 实际表头在第2行（索引为1），数据从第3行开始
+                // 使用 header: 1 来获取原始数组格式，然后重新格式化
+                const rawData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                // 跳过前2行（第1行是填写说明，第2行是表头）
+                const headerRow = rawData[1];
+                const dataRows = rawData.slice(2);
+
+                // 转换为对象格式
+                const jsonData = dataRows.map(row => {
+                    const obj = {};
+                    headerRow.forEach((header, index) => {
+                        if (index < row.length) {
+                            obj[header] = row[index];
+                        }
+                    });
+                    return obj;
+                });
 
                 resolve(jsonData);
             } catch (error) {
@@ -353,4 +384,61 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     updateStats();
     generateGrid();
+
+    // 检查对角线上的单元格内容的脚本
+    setTimeout(() => {
+        console.log('=== 页面加载完成 ===');
+
+        // 获取所有单元格
+        const cells = document.querySelectorAll('.cell');
+        console.log(`总单元格数: ${cells.length}`);
+
+        // 找到对角线上的单元格
+        const diagonalCells = [];
+        cells.forEach(cell => {
+            const x = parseInt(cell.dataset.x);
+            const y = parseInt(cell.dataset.y);
+
+            // 对角线单元格：x == y 或 x == 10 - y
+            if (x === y || x === 10 - y) {
+                diagonalCells.push(cell);
+            }
+        });
+
+        console.log(`对角线上的单元格数: ${diagonalCells.length}`);
+
+        // 打印对角线上的单元格信息
+        diagonalCells.forEach(cell => {
+            const x = cell.dataset.x;
+            const y = cell.dataset.y;
+            console.log(`\n--- 单元格(${x},${y}) ---`);
+            console.log('innerHTML:', cell.innerHTML);
+            console.log('textContent:', cell.textContent);
+            console.log('className:', cell.className);
+
+            // 检查是否包含坐标值
+            const hasCoords = cell.innerHTML.includes(x + ',' + y);
+            console.log('包含坐标值:', hasCoords);
+
+            // 检查是否有 coords 元素
+            const coordsElement = cell.querySelector('.coords');
+            if (coordsElement) {
+                console.log('coords元素内容:', coordsElement.textContent);
+            } else {
+                console.log('未找到 coords 元素');
+            }
+        });
+
+        // 打印玩家单元格信息
+        const playerCells = document.querySelectorAll('.player');
+        console.log(`\n=== 玩家单元格(${playerCells.length}个) ===`);
+        playerCells.forEach(cell => {
+            const x = cell.dataset.x;
+            const y = cell.dataset.y;
+            console.log(`\n玩家单元格(${x},${y}):`);
+            console.log('innerHTML:', cell.innerHTML);
+            console.log('textContent:', cell.textContent);
+            console.log('className:', cell.className);
+        });
+    }, 1000);
 });
