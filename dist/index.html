@@ -174,9 +174,26 @@
             color: white;
         }
 
-        .player.ring-1 { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #000; }
-        .player.ring-2 { background: linear-gradient(135deg, #c0c0c0, #e0e0e0); color: #000; }
-        .player.ring-3 { background: linear-gradient(135deg, #cd7f32, #e9a767); }
+        /* 环1内不同距离值的颜色深浅 */
+        .player.ring-1.ring-1-distance-0 { background: linear-gradient(135deg, #ffff00, #ffff33); color: #000; }
+        .player.ring-1.ring-1-distance-1 { background: linear-gradient(135deg, #ffed4e, #ffd700); color: #000; }
+        .player.ring-1.ring-1-distance-2 { background: linear-gradient(135deg, #ffd700, #ffc700); color: #000; }
+        .player.ring-1.ring-1-distance-3 { background: linear-gradient(135deg, #ffc700, #ffb700); color: #000; }
+        .player.ring-1.ring-1-distance-4 { background: linear-gradient(135deg, #ffb700, #ffa700); color: #000; }
+
+        /* 环2内不同距离值的颜色深浅 */
+        .player.ring-2.ring-2-distance-0 { background: linear-gradient(135deg, #e0e0e0, #e8e8e8); color: #000; }
+        .player.ring-2.ring-2-distance-1 { background: linear-gradient(135deg, #d8d8d8, #d0d0d0); color: #000; }
+        .player.ring-2.ring-2-distance-2 { background: linear-gradient(135deg, #d0d0d0, #c8c8c8); color: #000; }
+        .player.ring-2.ring-2-distance-3 { background: linear-gradient(135deg, #c8c8c8, #c0c0c0); color: #000; }
+        .player.ring-2.ring-2-distance-4 { background: linear-gradient(135deg, #c0c0c0, #b8b8b8); color: #000; }
+
+        /* 环3内不同距离值的颜色深浅 */
+        .player.ring-3.ring-3-distance-0 { background: linear-gradient(135deg, #e9a767, #f2b777); }
+        .player.ring-3.ring-3-distance-1 { background: linear-gradient(135deg, #e29f61, #e9a767); }
+        .player.ring-3.ring-3-distance-2 { background: linear-gradient(135deg, #db975b, #e29f61); }
+        .player.ring-3.ring-3-distance-3 { background: linear-gradient(135deg, #d48f55, #db975b); }
+        .player.ring-3.ring-3-distance-4 { background: linear-gradient(135deg, #cd874f, #d48f55); }
 
         /* 距离值对应的颜色 */
         .distance-0 { background: linear-gradient(135deg, #00ff00, #00cc00); }

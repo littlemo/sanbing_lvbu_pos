@@ -166,6 +166,8 @@ function generateGrid() {
                     // 添加距离值对应的CSS类
                     const distanceInt = Math.floor(playerPos.distance);
                     cell.className += ` distance-${distanceInt}`;
+                    // 添加环内距离值对应的CSS类
+                    cell.className += ` ring-${playerPos.ring}-distance-${playerPos.distanceLevel}`;
                     const player = activePlayers[playerPos.index];
                     if (player) {
                         cell.className += ` player ring-${playerPos.ring}`;
@@ -265,6 +267,31 @@ function calculatePositions(lubuX, lubuY, ringCount) {
             }
         }
     }
+
+    // 计算每个环内的最大和最小距离值
+    const ringDistances = {};
+    positions.forEach(pos => {
+        if (!ringDistances[pos.ring]) {
+            ringDistances[pos.ring] = { min: Infinity, max: -Infinity };
+        }
+        if (pos.distance < ringDistances[pos.ring].min) {
+            ringDistances[pos.ring].min = pos.distance;
+        }
+        if (pos.distance > ringDistances[pos.ring].max) {
+            ringDistances[pos.ring].max = pos.distance;
+        }
+    });
+
+    // 为每个位置添加环内距离值对应的CSS类
+    positions.forEach(pos => {
+        const ringRange = ringDistances[pos.ring];
+        const distanceRange = ringRange.max - ringRange.min;
+        let distanceLevel = 0;
+        if (distanceRange > 0) {
+            distanceLevel = Math.floor(((pos.distance - ringRange.min) / distanceRange) * 4); // 分为5个级别
+        }
+        pos.distanceLevel = distanceLevel;
+    });
 
     // 按照距离由近到远排序
     positions.sort((a, b) => a.distance - b.distance);
