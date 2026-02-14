@@ -111,9 +111,9 @@ function generateGrid() {
         maxY = Math.max(maxY, pos.y);
     });
 
-    minX = Math.min(minX, lubuX);
+    minX = Math.max(minX, lubuX, 0); // 确保最小X坐标不小于0
     maxX = Math.max(maxX, lubuX + 1);
-    minY = Math.min(minY, lubuY);
+    minY = Math.max(minY, lubuY, 0); // 确保最小Y坐标不小于0
     maxY = Math.max(maxY, lubuY + 1);
 
     const cols = maxX - minX + 1;
@@ -135,6 +135,10 @@ function generateGrid() {
     for (let y = maxY; y >= minY; y--) {
         if (DEBUG) console.log(`\n--- Y坐标: ${y} ---`);
         for (let x = minX; x <= maxX; x++) {
+            if (x < 0 || y < 0) { // 跳过坐标小于0的单元格
+                continue;
+            }
+
             const cell = document.createElement('div');
             cell.className = 'cell';
             cell.dataset.x = x;
@@ -170,8 +174,12 @@ function generateGrid() {
                             ring: playerPos.ring,
                             positionType: playerPos.positionType
                         });
+                    } else {
+                        // 当找到位置但没有玩家数据时，显示坐标
+                        cell.innerHTML = `<small>(${x},${y})</small>`;
                     }
                 } else {
+                    // 当找不到位置时，显示坐标
                     cell.innerHTML = `<small>(${x},${y})</small>`;
                 }
             }
@@ -191,14 +199,14 @@ function calculatePositions(lubuX, lubuY, ringCount) {
     const baseY = lubuY;
 
     for (let ring = 1; ring <= ringCount; ring++) {
-        const minX = baseX - ring;
+        const minX = Math.max(0, baseX - ring); // 确保不小于0
         const maxX = baseX + 1 + ring;
-        const minY = baseY - ring;
+        const minY = Math.max(0, baseY - ring); // 确保不小于0
         const maxY = baseY + 1 + ring;
 
         for (let x = minX; x <= maxX; x++) {
             for (let y = minY; y <= maxY; y++) {
-                if (!isLubuField(x, y, baseX, baseY) && isOnRing(x, y, baseX, baseY, ring)) {
+                if (x >= 0 && y >= 0 && !isLubuField(x, y, baseX, baseY) && isOnRing(x, y, baseX, baseY, ring)) {
                     positions.push({
                         x: x,
                         y: y,
@@ -270,7 +278,26 @@ function updateResultsTable() {
 function updateStats() {
     const totalPlayers = playerData.length;
     const ringCount = parseInt(document.getElementById('ringCount').value);
-    const totalPositions = ringCount * (ringCount + 1) * 5;
+    const lubuX = parseInt(document.getElementById('lubuX').value);
+    const lubuY = parseInt(document.getElementById('lubuY').value);
+
+    // 重新计算总位置数量，只计算坐标值大于等于0的位置
+    let totalPositions = 0;
+    for (let ring = 1; ring <= ringCount; ring++) {
+        const minX = Math.max(0, lubuX - ring);
+        const maxX = lubuX + 1 + ring;
+        const minY = Math.max(0, lubuY - ring);
+        const maxY = lubuY + 1 + ring;
+
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+                if (x >= 0 && y >= 0 && !isLubuField(x, y, lubuX, lubuY) && isOnRing(x, y, lubuX, lubuY, ring)) {
+                    totalPositions++;
+                }
+            }
+        }
+    }
+
     const filledPositions = Math.min(totalPlayers, totalPositions);
     const emptyPositions = Math.max(0, totalPositions - totalPlayers);
 
@@ -362,4 +389,61 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     updateStats();
     generateGrid();
+
+    // 检查对角线上的单元格内容的脚本
+    setTimeout(() => {
+        console.log('=== 页面加载完成 ===');
+
+        // 获取所有单元格
+        const cells = document.querySelectorAll('.cell');
+        console.log(`总单元格数: ${cells.length}`);
+
+        // 找到对角线上的单元格
+        const diagonalCells = [];
+        cells.forEach(cell => {
+            const x = parseInt(cell.dataset.x);
+            const y = parseInt(cell.dataset.y);
+
+            // 对角线单元格：x == y 或 x == 10 - y
+            if (x === y || x === 10 - y) {
+                diagonalCells.push(cell);
+            }
+        });
+
+        console.log(`对角线上的单元格数: ${diagonalCells.length}`);
+
+        // 打印对角线上的单元格信息
+        diagonalCells.forEach(cell => {
+            const x = cell.dataset.x;
+            const y = cell.dataset.y;
+            console.log(`\n--- 单元格(${x},${y}) ---`);
+            console.log('innerHTML:', cell.innerHTML);
+            console.log('textContent:', cell.textContent);
+            console.log('className:', cell.className);
+
+            // 检查是否包含坐标值
+            const hasCoords = cell.innerHTML.includes(x + ',' + y);
+            console.log('包含坐标值:', hasCoords);
+
+            // 检查是否有 coords 元素
+            const coordsElement = cell.querySelector('.coords');
+            if (coordsElement) {
+                console.log('coords元素内容:', coordsElement.textContent);
+            } else {
+                console.log('未找到 coords 元素');
+            }
+        });
+
+        // 打印玩家单元格信息
+        const playerCells = document.querySelectorAll('.player');
+        console.log(`\n=== 玩家单元格(${playerCells.length}个) ===`);
+        playerCells.forEach(cell => {
+            const x = cell.dataset.x;
+            const y = cell.dataset.y;
+            console.log(`\n玩家单元格(${x},${y}):`);
+            console.log('innerHTML:', cell.innerHTML);
+            console.log('textContent:', cell.textContent);
+            console.log('className:', cell.className);
+        });
+    }, 1000);
 });
