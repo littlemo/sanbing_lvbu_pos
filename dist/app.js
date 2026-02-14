@@ -409,6 +409,7 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
         readExcelFile(file)
             .then(jsonData => {
                 processPlayerData(jsonData);
+                generateGrid(); // 自动触发排位逻辑
                 showMessage('Excel 文件读取成功！', 'success');
             })
             .catch(error => {
