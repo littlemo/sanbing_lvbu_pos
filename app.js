@@ -288,9 +288,15 @@ function calculatePositions(lubuX, lubuY, ringCount) {
         const distanceRange = ringRange.max - ringRange.min;
         let distanceLevel = 0;
         if (distanceRange > 0) {
-            distanceLevel = Math.floor(((pos.distance - ringRange.min) / distanceRange) * 4); // 分为5个级别
+            // 优化距离级别计算，使用更精细的级别划分（10个级别）
+            distanceLevel = Math.floor(((pos.distance - ringRange.min) / distanceRange) * 9); // 分为10个级别
         }
         pos.distanceLevel = distanceLevel;
+
+        // 调试信息：输出3环和4环中每个位置的距离值和距离级别
+        if (pos.ring === 3 || pos.ring === 4) {
+            console.log(`环${pos.ring}位置(${pos.x},${pos.y}) 距离: ${pos.distance.toFixed(2)} 距离级别: ${pos.distanceLevel}`);
+        }
     });
 
     // 按照距离由近到远排序
