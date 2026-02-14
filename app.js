@@ -169,6 +169,19 @@ function generateGrid() {
                     const player = activePlayers[playerPos.index];
                     if (player) {
                         cell.className += ` player ring-${playerPos.ring}`;
+                        // 添加完整信息的data属性
+                        cell.dataset.playerInfo = `
+姓名: ${player.name}
+排名: ${playerPos.index + 1}
+四维和: ${player.stats.toFixed(0)}
+坦度: ${player.defense.toFixed(0)}
+输出: ${player.attack.toFixed(0)}
+X坐标: ${x}
+Y坐标: ${y}
+环数: ${playerPos.ring}
+位置类型: ${playerPos.positionType}
+距离: ${playerPos.distance.toFixed(2)}
+`.trim();
                         cell.innerHTML = `
                             <div class="rank">${playerPos.index + 1}</div>
                             <div class="name">${player.name}</div>

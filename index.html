@@ -195,6 +195,36 @@
         .distance-13 { background: linear-gradient(135deg, #ff6600, #ff3300); }
         .distance-14 { background: linear-gradient(135deg, #ff3300, #ff0000); }
 
+        /* 鼠标hover效果 */
+        .cell:hover {
+            transform: scale(1.1);
+            z-index: 100;
+        }
+
+        /* 玩家信息tooltip */
+        .cell.player::after {
+            content: attr(data-player-info);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            transform-origin: bottom center;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            width: 200px;
+            margin-bottom: 10px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .cell.player:hover::after {
+            transform: translateX(-50%) scale(1);
+            opacity: 1;
+        }
+
         .rank {
             position: absolute;
             top: 2px;
@@ -327,6 +357,7 @@
 <body>
     <div class="container">
         <h1>吕布校场排位工具</h1>
+        <div style="text-align: center; color: var(--text-color); margin-bottom: 20px;">作者：#620 雪色梦貘</div>
 
         <div class="controls">
             <div class="control-group">
