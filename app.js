@@ -17,7 +17,21 @@ function processData() {
             const workbook = XLSX.read(data, { type: 'array' });
 
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+            // 实际表头在第 2 行，数据从第 3 行开始
+            const rawData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+            const headerRow = rawData[1];
+            const dataRows = rawData.slice(2);
+
+            const jsonData = dataRows.map(row => {
+                const obj = {};
+                headerRow.forEach((header, index) => {
+                    if (index < row.length) {
+                        obj[header] = row[index];
+                    }
+                });
+                return obj;
+            });
 
             processPlayerData(jsonData);
             generateGrid();
@@ -178,6 +192,10 @@ function calculatePositions(lubuX, lubuY, ringCount) {
     const baseX = lubuX;
     const baseY = lubuY;
 
+    // 计算吕布校场4个cell的中心点 (lubuX + 0.5, lubuY + 0.5)
+    const centerX = lubuX + 0.5;
+    const centerY = lubuY + 0.5;
+
     // 直接实现用户公式：环数n，总位置数=(2n+2)^2 - 4 (吕布校场)
     // 为了确保坐标不小于0，我们需要调整起始坐标
     for (let ring = 1; ring <= ringCount; ring++) {
@@ -199,17 +217,29 @@ function calculatePositions(lubuX, lubuY, ringCount) {
                 // 检查位置是否已经存在
                 const exists = positions.some(pos => pos.x === x && pos.y === y);
                 if (!exists) {
+                    // 计算当前位置到吕布校场中心点的距离
+                    const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+
                     positions.push({
                         x,
                         y,
                         ring,
                         positionType: getPositionType(x, y, lubuX, lubuY, ring),
-                        index: positions.length
+                        index: positions.length,
+                        distance: distance
                     });
                 }
             }
         }
     }
+
+    // 按照距离由近到远排序
+    positions.sort((a, b) => a.distance - b.distance);
+
+    // 更新每个位置的index，确保排序后index是连续的
+    positions.forEach((pos, index) => {
+        pos.index = index;
+    });
 
     return positions;
 }
