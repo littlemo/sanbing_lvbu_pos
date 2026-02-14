@@ -163,6 +163,9 @@ function generateGrid() {
             } else {
                 const playerPos = positions.find(pos => pos.x === x && pos.y === y);
                 if (playerPos) {
+                    // 添加距离值对应的CSS类
+                    const distanceInt = Math.floor(playerPos.distance);
+                    cell.className += ` distance-${distanceInt}`;
                     const player = activePlayers[playerPos.index];
                     if (player) {
                         cell.className += ` player ring-${playerPos.ring}`;
