@@ -122,7 +122,7 @@ function generateGrid() {
     grid.style.setProperty('--cols', cols);
     grid.style.setProperty('--rows', rows);
 
-    for (let y = minY; y <= maxY; y++) {
+    for (let y = maxY; y >= minY; y--) {
         for (let x = minX; x <= maxX; x++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
