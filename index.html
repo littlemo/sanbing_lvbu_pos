@@ -332,6 +332,14 @@
                 <input type="number" id="ringCount" value="1" min="1" max="4">
             </div>
 
+            <div class="control-group">
+                <label for="sortBy">排位方式</label>
+                <select id="sortBy">
+                    <option value="stats">四维和</option>
+                    <option value="attack">输出</option>
+                </select>
+            </div>
+
             <div style="display: flex; flex-direction: column; justify-content: flex-end; gap: 10px;">
                 <button class="btn" onclick="downloadResults()">导出结果</button>
             </div>
@@ -375,6 +383,7 @@
                         <th>环数</th>
                         <th>位置类型</th>
                         <th>距离</th>
+                        <th>忽略</th>
                     </tr>
                 </thead>
                 <tbody id="resultsTableBody">

@@ -52,14 +52,19 @@ function processData() {
 function processPlayerData(jsonData) {
     playerData = [];
 
+    // 从localStorage中加载玩家忽略信息
+    const ignoredPlayers = JSON.parse(localStorage.getItem('ignoredPlayers') || '{}');
+
     jsonData.forEach(row => {
         // 检查是否有游戏ID字段
         if (row['游戏ID'] && String(row['游戏ID']).trim()) {
+            const playerName = String(row['游戏ID']).trim();
             const player = {
-                name: String(row['游戏ID']).trim(),
+                name: playerName,
                 stats: parseFloat(row['四维和'] || 0),
                 defense: parseFloat(row['步维(坦度)'] || 0),
-                attack: parseFloat(row['弓维(输出)'] || 0)
+                attack: parseFloat(row['弓维(输出)'] || 0),
+                ignore: ignoredPlayers[playerName] || false // 从本地存储加载忽略状态
             };
 
             if (!isNaN(player.stats)) {
@@ -68,7 +73,13 @@ function processPlayerData(jsonData) {
         }
     });
 
-    playerData.sort((a, b) => b.stats - a.stats);
+    // 根据选择的排位方式排序
+    const sortBy = document.getElementById('sortBy').value;
+    if (sortBy === 'stats') {
+        playerData.sort((a, b) => b.stats - a.stats);
+    } else if (sortBy === 'attack') {
+        playerData.sort((a, b) => b.attack - a.attack);
+    }
 
     updateStats();
 }
@@ -88,6 +99,9 @@ function generateGrid() {
     gridContainer.style.minHeight = `${heights[ringCount]}px`;
 
     const positions = calculatePositions(lubuX, lubuY, ringCount);
+
+    // 获取未被忽略的玩家列表
+    const activePlayers = playerData.filter(player => !player.ignore);
 
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
@@ -149,7 +163,7 @@ function generateGrid() {
             } else {
                 const playerPos = positions.find(pos => pos.x === x && pos.y === y);
                 if (playerPos) {
-                    const player = playerData[playerPos.index];
+                    const player = activePlayers[playerPos.index];
                     if (player) {
                         cell.className += ` player ring-${playerPos.ring}`;
                         cell.innerHTML = `
@@ -281,22 +295,24 @@ function updateResultsTable() {
     const tbody = document.getElementById('resultsTableBody');
     tbody.innerHTML = '';
 
-    // 按照排名升序排序
-    const sortedData = [...gridData].sort((a, b) => a.rank - b.rank);
+    // 显示所有玩家，包括没有位置的玩家
+    playerData.forEach((player, index) => {
+        // 查找玩家在gridData中的数据（如果有位置）
+        const gridRow = gridData.find(row => row.name === player.name);
 
-    sortedData.forEach(row => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${row.rank}</td>
-            <td>${row.name}</td>
-            <td>${row.stats.toFixed(0)}</td>
-            <td>${row.defense.toFixed(0)}</td>
-            <td>${row.attack.toFixed(0)}</td>
-            <td>${row.x}</td>
-            <td>${row.y}</td>
-            <td>${row.ring}</td>
-            <td>${row.positionType}</td>
-            <td>${row.distance}</td>
+            <td>${gridRow ? gridRow.rank : '-'}</td>
+            <td>${player.name}</td>
+            <td>${player.stats.toFixed(0)}</td>
+            <td>${player.defense.toFixed(0)}</td>
+            <td>${player.attack.toFixed(0)}</td>
+            <td>${gridRow ? gridRow.x : '-'}</td>
+            <td>${gridRow ? gridRow.y : '-'}</td>
+            <td>${gridRow ? gridRow.ring : '-'}</td>
+            <td>${gridRow ? gridRow.positionType : '-'}</td>
+            <td>${gridRow ? gridRow.distance : '-'}</td>
+            <td><input type="checkbox" ${player.ignore ? 'checked' : ''} onchange="toggleIgnore('${player.name}')"></td>
         `;
         tbody.appendChild(tr);
     });
@@ -345,6 +361,20 @@ function downloadResults() {
 
     const fileName = `吕布校场排位结果_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(workbook, fileName);
+}
+
+function toggleIgnore(playerName) {
+    // 找到对应的玩家并切换ignore属性
+    const player = playerData.find(p => p.name === playerName);
+    if (player) {
+        player.ignore = !player.ignore;
+        // 保存到localStorage
+        const ignoredPlayers = JSON.parse(localStorage.getItem('ignoredPlayers') || '{}');
+        ignoredPlayers[playerName] = player.ignore;
+        localStorage.setItem('ignoredPlayers', JSON.stringify(ignoredPlayers));
+        // 自动更新排位
+        processData();
+    }
 }
 
 function showMessage(text, type = 'success') {
@@ -426,11 +456,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const lubuXInput = document.getElementById('lubuX');
     const lubuYInput = document.getElementById('lubuY');
     const ringCountInput = document.getElementById('ringCount');
+    const sortBySelect = document.getElementById('sortBy');
 
     // 监听输入框变化事件
     lubuXInput.addEventListener('change', processData);
     lubuYInput.addEventListener('change', processData);
     ringCountInput.addEventListener('change', processData);
+    sortBySelect.addEventListener('change', processData);
 
     // 监听输入框输入事件（实时更新）
     lubuXInput.addEventListener('input', processData);
