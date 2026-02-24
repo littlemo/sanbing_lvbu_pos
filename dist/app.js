@@ -64,6 +64,8 @@ function processPlayerData(jsonData) {
                 stats: parseFloat(row['四维和'] || 0),
                 defense: parseFloat(row['步维(坦度)'] || 0),
                 attack: parseFloat(row['弓维(输出)'] || 0),
+                sixStats: parseFloat(row['六维和'] || 0),
+                cavalryArchery: parseFloat(row['骑弓维(输出)'] || 0),
                 ignore: ignoredPlayers[playerName] || false // 从本地存储加载忽略状态
             };
 
@@ -79,6 +81,10 @@ function processPlayerData(jsonData) {
         playerData.sort((a, b) => b.stats - a.stats);
     } else if (sortBy === 'attack') {
         playerData.sort((a, b) => b.attack - a.attack);
+    } else if (sortBy === 'sixStats') {
+        playerData.sort((a, b) => b.sixStats - a.sixStats);
+    } else if (sortBy === 'cavalryArchery') {
+        playerData.sort((a, b) => b.cavalryArchery - a.cavalryArchery);
     }
 
     updateStats();
@@ -183,6 +189,8 @@ function generateGrid() {
 四维和: ${player.stats.toFixed(0)}
 坦度: ${player.defense.toFixed(0)}
 输出: ${player.attack.toFixed(0)}
+六维和: ${player.sixStats.toFixed(0)}
+骑弓维: ${player.cavalryArchery.toFixed(0)}
 X坐标: ${x}
 Y坐标: ${y}
 环数: ${playerPos.ring}
@@ -206,6 +214,8 @@ Y坐标: ${y}
                             stats: player.stats,
                             defense: player.defense,
                             attack: player.attack,
+                            sixStats: player.sixStats,
+                            cavalryArchery: player.cavalryArchery,
                             x: x,
                             y: y,
                             ring: playerPos.ring,
@@ -369,6 +379,8 @@ function updateResultsTable() {
             <td>${player.stats.toFixed(0)}</td>
             <td>${player.defense.toFixed(0)}</td>
             <td>${player.attack.toFixed(0)}</td>
+            <td>${player.sixStats.toFixed(0)}</td>
+            <td>${player.cavalryArchery.toFixed(0)}</td>
             <td>${gridRow ? gridRow.x : '-'}</td>
             <td>${gridRow ? gridRow.y : '-'}</td>
             <td>${gridRow ? gridRow.ring : '-'}</td>
@@ -413,6 +425,8 @@ function downloadResults() {
         '四维和': row.stats,
         '坦度': row.defense,
         '输出': row.attack,
+        '六维和': row.sixStats,
+        '骑弓维': row.cavalryArchery,
         'X坐标': row.x,
         'Y坐标': row.y,
         '环数': row.ring,
