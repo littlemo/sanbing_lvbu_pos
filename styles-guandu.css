@@ -1,0 +1,225 @@
+/* 地图和建筑样式 */
+#map-container {
+    overflow-x: auto;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    min-height: 600px;
+    align-items: center;
+}
+
+#map {
+    display: grid;
+    gap: 10px;
+    background: #3a3a3a;
+    padding: 10px;
+    border-radius: var(--border-radius);
+    grid-template-rows: repeat(5, 100px);
+    grid-template-columns: repeat(3, 150px);
+}
+
+.cell {
+    width: 150px;
+    height: 100px;
+    background: #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 4px;
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-color);
+}
+
+.cell-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.cell:hover {
+    background: #3a3a3a;
+    transform: scale(1.05);
+    z-index: 10;
+}
+
+/* 建筑特殊样式 */
+.building {
+    background: linear-gradient(135deg, var(--primary-color), #8b6914);
+    font-weight: bold;
+    color: white;
+}
+
+.building.wuchao {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+}
+
+.building.bingqifang {
+    background: linear-gradient(135deg, #4ecdc4, #26a69a);
+}
+
+.building.guandu {
+    background: linear-gradient(135deg, #ffd93d, #ffb347);
+    font-size: 1.1rem;
+}
+
+.building.piliuche {
+    background: linear-gradient(135deg, #a8e6cf, #7fcdbb);
+}
+
+.building.gongjiangfang {
+    background: linear-gradient(135deg, #d4a5a5, #c06c84);
+}
+
+.building.dalangcang-left,
+.building.dalangcang-right {
+    background: linear-gradient(135deg, #feca57, #ff9ff3);
+}
+
+.building.xiaoliangcang-left-1,
+.building.xiaoliangcang-left-2,
+.building.xiaoliangcang-left-3,
+.building.xiaoliangcang-right-1,
+.building.xiaoliangcang-right-2,
+.building.xiaoliangcang-right-3 {
+    background: linear-gradient(135deg, #54a0ff, #0984e3);
+}
+
+/* 时间线样式 */
+.time-line {
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.time-point {
+    padding: 5px 10px;
+    background: var(--primary-color);
+    border-radius: 4px;
+    font-weight: bold;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.time-point.active {
+    background: var(--accent-color);
+    transform: scale(1.1);
+}
+
+/* 建筑名称和信息样式 */
+.building-name {
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 2px;
+    color: white;
+}
+
+.building-info {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.open-time {
+    margin-bottom: 1px;
+}
+
+.points {
+    font-size: 0.65rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    #map {
+        grid-template-columns: repeat(3, 120px);
+        grid-template-rows: repeat(5, 80px);
+    }
+
+    .cell {
+        width: 120px;
+        height: 80px;
+        font-size: 0.7rem;
+    }
+
+    .time-line {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .time-point {
+        text-align: center;
+    }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cell {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.time-point {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.time-point.active {
+    animation: fadeIn 0.3s ease-in-out, pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
+}

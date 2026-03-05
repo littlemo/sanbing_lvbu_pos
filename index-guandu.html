@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>官渡之战安排工具 - 三国·冰河时代</title>
+    <link rel="stylesheet" href="styles-guandu.css">
+    <style>
+        /* 基础样式，可从现有项目复制 */
+        :root {
+            --primary-color: #d4af37;
+            --secondary-color: #3a3a3a;
+            --accent-color: #c11b17;
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --grid-bg: #2a2a2a;
+            --cell-size: 80px;
+            --border-radius: 4px;
+        }
+
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            justify-content: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 150px;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+
+        input[type="number"], input[type="file"], select {
+            padding: 8px 12px;
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            border-color: var(--accent-color);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        #map-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            min-height: 600px;
+            align-items: center;
+        }
+
+        #map {
+            display: grid;
+            gap: 10px;
+            background: #3a3a3a;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            grid-template-rows: repeat(5, 100px);
+            grid-template-columns: repeat(3, 150px);
+        }
+
+        .cell {
+            width: 150px;
+            height: 100px;
+            background: #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 4px;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-color);
+        }
+
+        .cell-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .cell:hover {
+            background: #3a3a3a;
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        #results {
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        tr:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        #message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        #message.success {
+            background: #28a745;
+            transform: translateX(0);
+        }
+
+        #message.error {
+            background: #dc3545;
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --cell-size: 60px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #map {
+                grid-template-rows: repeat(5, 80px);
+                grid-template-columns: repeat(3, 120px);
+            }
+
+            .cell {
+                width: 120px;
+                height: 80px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>官渡之战安排工具</h1>
+        <div style="text-align: center; color: var(--text-color); margin-bottom: 20px;">作者：#620 雪色梦貘</div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="excelFile">上传 Excel 文件</label>
+                <input type="file" id="excelFile" accept=".xlsx, .xls">
+            </div>
+
+            <div class="control-group">
+                <label for="phase">战役阶段</label>
+                <select id="phase">
+                    <option value="1">第一阶段（9:00-9:15）</option>
+                    <option value="2">第二阶段（9:15-9:25）</option>
+                    <option value="3">第三阶段（9:25-9:40）</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="sortBy">排位方式</label>
+                <select id="sortBy">
+                    <option value="stats">四维和</option>
+                    <option value="sixStats">六维和</option>
+                    <option value="cavalryArchery">骑弓维</option>
+                    <option value="attack">输出</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="legion">军团</label>
+                <select id="legion">
+                    <option value="1">军团1</option>
+                    <option value="2">军团2</option>
+                </select>
+            </div>
+
+            <div style="display: flex; flex-direction: column; justify-content: flex-end; gap: 10px;">
+                <button class="btn" onclick="downloadResults()">导出结果</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalPlayers">0</div>
+                <div class="stat-label">总玩家数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="assignedPlayers">0</div>
+                <div class="stat-label">已分配</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="unassignedPlayers">0</div>
+                <div class="stat-label">未分配</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="ignoredPlayers">0</div>
+                <div class="stat-label">已忽略</div>
+            </div>
+        </div>
+
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+
+        <div id="results">
+            <h2 style="text-align: center; color: var(--primary-color); margin-bottom: 15px;">分配结果</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>玩家姓名</th>
+                        <th>四维和</th>
+                        <th>六维和</th>
+                        <th>骑弓维</th>
+                        <th>输出</th>
+                        <th>坦度</th>
+                        <th>分工</th>
+                        <th>分配建筑</th>
+                        <th>军团</th>
+                        <th>忽略</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="message"></div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="utils-guandu.js"></script>
+    <script src="app-guandu.js"></script>
+</body>
+</html>

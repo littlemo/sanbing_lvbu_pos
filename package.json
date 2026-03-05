@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "python3 -m http.server 8000",
     "build": "mkdir -p dist && cp -r index.html app.js dist/ 2>/dev/null || true && echo 'Build completed successfully. Output in dist/ directory.'",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "jest"
   },
   "keywords": [
     "三国·冰河时代",
@@ -26,6 +27,8 @@
   },
   "homepage": "https://github.com/littlemo/sanbing_lvbu_pos#readme",
   "devDependencies": {
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "jsdom": "^28.0.0",
     "puppeteer": "^24.37.3",
     "xlsx": "^0.18.5"
